@@ -1,6 +1,5 @@
+/* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any */
 import { PrismaClient } from "@prisma/client";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
-import { createClient } from "@libsql/client";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -9,13 +8,14 @@ const globalForPrisma = globalThis as unknown as {
 function createPrismaClient(): PrismaClient {
   // Use Turso in production (when TURSO_DATABASE_URL is set)
   if (process.env.TURSO_DATABASE_URL) {
+    const { PrismaLibSql } = require("@prisma/adapter-libsql");
+    const { createClient } = require("@libsql/client");
     const libsql = createClient({
       url: process.env.TURSO_DATABASE_URL,
       authToken: process.env.TURSO_AUTH_TOKEN,
     });
     const adapter = new PrismaLibSql(libsql);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new PrismaClient({ adapter } as unknown as ConstructorParameters<typeof PrismaClient>[0]);
+    return new PrismaClient({ adapter } as any);
   }
 
   // Fall back to local SQLite for development
