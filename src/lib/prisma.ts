@@ -14,7 +14,8 @@ function createPrismaClient(): PrismaClient {
       authToken: process.env.TURSO_AUTH_TOKEN,
     });
     const adapter = new PrismaLibSql(libsql);
-    return new PrismaClient({ adapter } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new PrismaClient({ adapter } as unknown as ConstructorParameters<typeof PrismaClient>[0]);
   }
 
   // Fall back to local SQLite for development
