@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm)",
+      "Bash(npx create-next-app@latest movies-app-temp --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm)",
+      "Bash(npm install)",
+      "Bash(npx prisma db push)",
+      "Bash(npx next build)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(where node)",
+      "Bash(where npx.cmd)",
+      "Bash(where next.cmd)",
+      "Bash(ls \"/c/Users/tcrig/Desktop/Movies App/node_modules/.bin/next\"*)",
+      "Bash(git --version)",
+      "Bash(gh --version)",
+      "Bash(git init)",
+      "Bash(git add -A)"
+    ]
+  }
+}

@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model UserProfile {
+  id                String   @id @default("default-user")
+  displayName       String   @default("Movie Fan")
+  favoriteGenres    String   @default("[]")
+  favoriteActors    String   @default("[]")
+  streamingServices String   @default("[]")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  ratings      MovieRating[]
+  favorites    FavoriteMovie[]
+  chatSessions ChatSession[]
+}
+
+model MovieRating {
+  id         String   @id @default(cuid())
+  tmdbId     Int
+  mediaType  String   @default("movie")
+  title      String
+  posterPath String?
+  rating     Int
+  review     String?
+  genreIds   String   @default("[]")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  userId String
+  user   UserProfile @relation(fields: [userId], references: [id])
+
+  @@unique([userId, tmdbId])
+}
+
+model FavoriteMovie {
+  id         String   @id @default(cuid())
+  tmdbId     Int
+  mediaType  String   @default("movie")
+  title      String
+  posterPath String?
+  genreIds   String   @default("[]")
+  addedAt    DateTime @default(now())
+
+  userId String
+  user   UserProfile @relation(fields: [userId], references: [id])
+
+  @@unique([userId, tmdbId])
+}
+
+model ChatSession {
+  id        String   @id @default(cuid())
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId   String
+  user     UserProfile @relation(fields: [userId], references: [id])
+  messages ChatMessage[]
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  role      String
+  content   String
+  movieIds  String   @default("[]")
+  createdAt DateTime @default(now())
+
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id])
+}
