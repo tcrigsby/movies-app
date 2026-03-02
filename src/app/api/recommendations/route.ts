@@ -18,16 +18,26 @@ interface FeedSection {
 
 export async function GET() {
   try {
-    const profile = await prisma.userProfile.findUnique({
-      where: { id: "default-user" },
-      include: { ratings: true, favorites: true },
-    });
+    // Wrap Prisma call so DB errors don't kill the whole feed
+    let profile: Awaited<ReturnType<typeof prisma.userProfile.findUnique>> & {
+      ratings?: { tmdbId: number; rating: number; mediaType: string; title: string }[];
+      favorites?: { tmdbId: number }[];
+    } | null = null;
+
+    try {
+      profile = await prisma.userProfile.findUnique({
+        where: { id: "default-user" },
+        include: { ratings: true, favorites: true },
+      });
+    } catch (dbError) {
+      console.error("Database error (continuing without profile):", dbError);
+    }
 
     const ratedTmdbIds = new Set(
-      profile?.ratings.map((r) => r.tmdbId) ?? []
+      profile?.ratings?.map((r) => r.tmdbId) ?? []
     );
     const favoriteTmdbIds = new Set(
-      profile?.favorites.map((f) => f.tmdbId) ?? []
+      profile?.favorites?.map((f) => f.tmdbId) ?? []
     );
     const excludeIds = new Set([...ratedTmdbIds, ...favoriteTmdbIds]);
 

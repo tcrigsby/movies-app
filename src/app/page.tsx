@@ -23,14 +23,15 @@ export default function HomePage() {
     async function loadFeed() {
       try {
         const res = await fetch("/api/recommendations");
-        if (!res.ok) throw new Error("Failed to load recommendations");
         const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to load recommendations");
+        }
         setSections(data.sections || []);
       } catch (err) {
         console.error("Feed error:", err);
-        setError(
-          "Could not load recommendations. Make sure your TMDB API key is configured in .env.local"
-        );
+        const message = err instanceof Error ? err.message : "Unknown error";
+        setError(`Could not load recommendations: ${message}`);
       } finally {
         setLoading(false);
       }
@@ -55,23 +56,10 @@ export default function HomePage() {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="max-w-md rounded-xl border bg-[var(--card)] p-6 text-center">
-          <h2 className="mb-2 text-lg font-semibold">Setup Required</h2>
+          <h2 className="mb-2 text-lg font-semibold">Something Went Wrong</h2>
           <p className="mb-4 text-sm text-[var(--muted-foreground)]">{error}</p>
-          <div className="rounded-lg bg-[var(--muted)] p-3 text-left text-xs font-mono">
-            <p className="text-[var(--muted-foreground)]"># In .env.local, add:</p>
-            <p>TMDB_API_KEY=your_key</p>
-            <p>TMDB_API_READ_ACCESS_TOKEN=your_token</p>
-          </div>
-          <p className="mt-3 text-xs text-[var(--muted-foreground)]">
-            Get a free API key at{" "}
-            <a
-              href="https://www.themoviedb.org/settings/api"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[var(--primary)] hover:underline"
-            >
-              themoviedb.org
-            </a>
+          <p className="text-xs text-[var(--muted-foreground)]">
+            If deployed, make sure environment variables are set correctly in your hosting provider.
           </p>
         </div>
       </div>
