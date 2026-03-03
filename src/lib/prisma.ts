@@ -6,12 +6,13 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient(): PrismaClient {
-  // Use Turso in production (when TURSO_DATABASE_URL is set)
-  if (process.env.TURSO_DATABASE_URL) {
+  // Use Turso in production (when TURSO_DATABASE_URL is set and not empty)
+  const tursoUrl = process.env.TURSO_DATABASE_URL;
+  if (tursoUrl && tursoUrl !== "undefined") {
     const { PrismaLibSQL } = require("@prisma/adapter-libsql");
     const { createClient } = require("@libsql/client");
     const libsql = createClient({
-      url: process.env.TURSO_DATABASE_URL,
+      url: tursoUrl,
       authToken: process.env.TURSO_AUTH_TOKEN,
     });
     const adapter = new PrismaLibSQL(libsql);
@@ -22,6 +23,18 @@ function createPrismaClient(): PrismaClient {
   return new PrismaClient();
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+// Lazy initialization — don't create at module load time
+// This avoids issues during Next.js build/static generation
+function getPrismaClient(): PrismaClient {
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = createPrismaClient();
+  }
+  return globalForPrisma.prisma;
+}
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    const client = getPrismaClient();
+    return (client as any)[prop];
+  },
+});

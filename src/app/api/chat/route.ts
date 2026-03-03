@@ -6,10 +6,16 @@ import { buildSystemPrompt } from "@/lib/ai/system-prompt";
 export async function POST(req: Request) {
   const { messages } = await req.json();
 
-  const profile = await prisma.userProfile.findUnique({
-    where: { id: "default-user" },
-    include: { ratings: true, favorites: true },
-  });
+  // Wrap DB call so chat still works even if database is unavailable
+  let profile = null;
+  try {
+    profile = await prisma.userProfile.findUnique({
+      where: { id: "default-user" },
+      include: { ratings: true, favorites: true },
+    });
+  } catch (dbError) {
+    console.error("Database error in chat (continuing without profile):", dbError);
+  }
 
   const systemPrompt = buildSystemPrompt(profile);
 
