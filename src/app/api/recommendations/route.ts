@@ -109,7 +109,7 @@ export async function GET() {
       }
 
       // "Because you liked X" sections from top-rated movies
-      const topRated = profile.ratings
+      const topRated = (profile.ratings ?? [])
         .filter((r) => r.rating >= 4)
         .sort((a, b) => b.rating - a.rating)
         .slice(0, 2);
